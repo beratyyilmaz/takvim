@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Takvimim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#12111a;--bg1:#1a1927;--bg2:#211f31;--bg3:#2a2840;
+  --border:#2e2c45;--border2:#3d3a5c;
+  --accent:#a78bfa;--accent-dim:#7c6bc4;--accent2:#6ee7b7;
+  --text1:#ede9fe;--text2:#a49dc0;--text3:#5e5a7a;
+  --danger:#f87171;--warn:#fbbf24;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text1);overflow:hidden}
+.screen{display:none;flex-direction:column;height:100vh}
+.screen.active{display:flex}
+
+/* AUTH */
+.auth-bg{flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden}
+.auth-bg::before{content:'';position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.07) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.auth-card{position:relative;background:var(--bg1);border:0.5px solid var(--border2);border-radius:24px;padding:48px 40px;width:100%;max-width:380px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.5)}
+.auth-glyph{font-size:40px;margin-bottom:20px;display:block}
+.auth-title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--text1);margin-bottom:8px;letter-spacing:-.5px}
+.auth-sub{font-size:13px;color:var(--text3);margin-bottom:32px;line-height:1.7}
+.auth-err{font-size:12px;color:var(--danger);min-height:20px;margin-bottom:12px}
+.f-group{margin-bottom:16px;text-align:left}
+.f-label{font-size:11px;color:var(--text3);margin-bottom:6px;display:block;letter-spacing:.8px;text-transform:uppercase}
+.f-input{width:100%;background:var(--bg);border:0.5px solid var(--border2);border-radius:12px;padding:14px 16px;color:var(--text1);font-size:14px;outline:none;font-family:'DM Sans',sans-serif;transition:border-color .2s,box-shadow .2s}
+.f-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(167,139,250,.1)}
+.f-input.pw{text-align:center;letter-spacing:6px;font-size:18px}
+.auth-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;transition:all .2s;margin-bottom:16px}
+.auth-btn:hover{background:var(--accent-dim);transform:translateY(-1px);box-shadow:0 8px 24px rgba(167,139,250,.3)}
+.text-link{font-size:12px;color:var(--text3);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color .2s}
+.text-link:hover{color:var(--text2)}
+
+/* APP */
+.app{display:flex;flex-direction:column;height:100vh;background:var(--bg)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:60px;background:var(--bg1);border-bottom:0.5px solid var(--border);flex-shrink:0;gap:16px;position:relative}
+.nav-cluster{display:flex;align-items:center;gap:8px}
+.icon-btn{background:transparent;border:0.5px solid var(--border);color:var(--text2);width:36px;height:36px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;flex-shrink:0}
+.icon-btn:hover{background:var(--bg2);color:var(--text1);border-color:var(--border2)}
+.icon-btn.danger:hover{color:var(--danger);border-color:var(--danger)}
+
+/* Date Navigator */
+.date-nav{display:flex;align-items:center;background:var(--bg2);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;user-select:none}
+.date-nav-part{padding:9px 16px;font-size:14px;font-weight:500;color:var(--text1);transition:background .15s;white-space:nowrap}
+.date-nav-part:hover{background:var(--bg3)}
+.date-nav-sep{color:var(--border2);padding:0 2px}
+.date-picker-popup{position:absolute;top:68px;left:50%;transform:translateX(-50%);background:var(--bg1);border:0.5px solid var(--border2);border-radius:16px;padding:20px;z-index:500;box-shadow:0 24px 64px rgba(0,0,0,.6);display:none;min-width:280px}
+.date-picker-popup.open{display:block}
+.dp-section{margin-bottom:16px}
+.dp-label{font-size:11px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px}
+.dp-months{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.dp-month{padding:7px 4px;text-align:center;font-size:12px;border-radius:8px;cursor:pointer;color:var(--text2);transition:all .15s;border:0.5px solid transparent}
+.dp-month:hover{background:var(--bg2);color:var(--text1)}
+.dp-month.active{background:var(--accent);color:#fff}
+.dp-year-row{display:flex;align-items:center;gap:8px}
+.dp-year-btn{background:transparent;border:0.5px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.dp-year-btn:hover{background:var(--bg2);color:var(--text1)}
+.dp-year-val{flex:1;text-align:center;font-size:16px;font-weight:500;color:var(--text1)}
+
+.topbar-right{display:flex;gap:8px;align-items:center}
+.add-btn{background:var(--accent);border:none;color:#fff;padding:9px 18px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:7px;transition:all .2s}
+.add-btn:hover{background:var(--accent-dim);transform:translateY(-1px);box-shadow:0 6px 20px rgba(167,139,250,.3)}
+
+/* MAIN */
+.main{display:flex;flex:1;overflow:hidden}
+.cal-col{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.days-header{display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px;border-bottom:0.5px solid var(--border)}
+.day-hdr{text-align:center;padding:10px 4px;font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr);flex:1;padding:12px;gap:6px;overflow:hidden}
+
+.cal-day{background:var(--bg1);border:0.5px solid var(--border);border-radius:12px;padding:8px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;overflow:hidden;min-height:0;position:relative}
+.cal-day:hover{background:var(--bg2);border-color:var(--border2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.cal-day.today{border-color:var(--accent);background:rgba(167,139,250,.06)}
+.cal-day.today .day-num{color:var(--accent);font-weight:600}
+.cal-day.other-month{opacity:.18}
+.cal-day.selected{border-color:var(--accent2);background:rgba(110,231,183,.05)}
+.today-ring{position:absolute;top:6px;right:6px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.day-num{font-size:12px;color:var(--text2);margin-bottom:4px;flex-shrink:0}
+.day-thumb{display:none;width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;margin-bottom:3px;flex-shrink:0}
+.cal-day.has-photo .day-thumb{display:block}
+.ev-pip{font-size:9.5px;line-height:1.4;color:var(--text1);background:rgba(167,139,250,.1);border-left:2px solid var(--accent);padding:2px 5px;border-radius:0 4px 4px 0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;margin-bottom:2px;flex-shrink:0}
+.ev-pip.todo{border-color:var(--accent2);background:rgba(110,231,183,.08)}
+.ev-pip.urgent{border-color:var(--danger);background:rgba(248,113,113,.08)}
+.ev-pip.done{border-color:var(--text3);color:var(--text3);text-decoration:line-through;background:transparent}
+
+/* SIDE PANEL */
+.side-panel{width:290px;background:var(--bg1);border-left:0.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.panel-hdr{padding:20px 18px 14px;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.panel-date{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text1);letter-spacing:-.3px}
+.panel-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.photo-area{flex-shrink:0;border-bottom:0.5px solid var(--border)}
+.photo-gallery{display:flex;gap:6px;padding:12px 18px;overflow-x:auto;scrollbar-width:none;align-items:center}
+.photo-gallery::-webkit-scrollbar{display:none}
+.photo-thumb{width:68px;height:68px;object-fit:cover;border-radius:10px;cursor:pointer;border:0.5px solid var(--border);transition:all .2s;flex-shrink:0}
+.photo-thumb:hover{border-color:var(--accent);transform:scale(1.05)}
+.photo-add-btn{width:68px;height:68px;border:0.5px dashed var(--border2);border-radius:10px;background:transparent;color:var(--text3);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-family:'DM Sans',sans-serif;transition:all .2s;flex-shrink:0}
+.photo-add-btn:hover{border-color:var(--accent);color:var(--accent)}
+.photo-add-btn i{font-size:20px}
+.events-list{flex:1;overflow-y:auto;padding:14px 18px}
+.events-list::-webkit-scrollbar{width:3px}
+.events-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.ev-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:all .2s}
+.ev-card:hover{border-color:var(--border2)}
+.ev-card.done-card{opacity:.45}
+.ec-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.ec-title{font-size:13px;font-weight:500;color:var(--text1);flex:1;line-height:1.4}
+.ec-title.done-txt{text-decoration:line-through;color:var(--text3)}
+.ec-badge{font-size:10px;padding:2px 8px;border-radius:20px;flex-shrink:0;font-weight:500}
+.badge-plan{background:rgba(167,139,250,.15);color:var(--accent)}
+.badge-todo{background:rgba(110,231,183,.15);color:var(--accent2)}
+.badge-urgent{background:rgba(248,113,113,.15);color:var(--danger)}
+.ec-time{font-size:11px;color:var(--text3);margin-top:5px;display:flex;align-items:center;gap:4px}
+.ec-desc{font-size:11px;color:var(--text3);margin-top:5px;line-height:1.6}
+.ec-actions{display:flex;gap:6px;margin-top:10px}
+.ec-btn{font-size:11px;padding:4px 10px;border-radius:6px;border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.ec-btn:hover{background:var(--bg3);color:var(--text1)}
+.ec-btn.ok-btn{color:var(--accent2)}
+.ec-btn.del-btn:hover{color:var(--danger);border-color:var(--danger)}
+.panel-bottom{padding:14px 18px;border-top:0.5px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:8px;align-items:center}
+.panel-add-btn{width:100%;background:var(--bg2);border:0.5px dashed var(--border2);color:var(--text3);padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all .2s}
+.panel-add-btn:hover{border-color:var(--accent);color:var(--accent)}
+.empty-state{text-align:center;padding:32px 16px;color:var(--text3);font-size:12px;line-height:2}
+.empty-icon{font-size:28px;margin-bottom:10px;opacity:.25;display:block}
+
+/* AI */
+.ai-trigger{position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-dim));border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(167,139,250,.4);transition:all .2s;z-index:300}
+.ai-trigger:hover{transform:scale(1.08);box-shadow:0 12px 40px rgba(167,139,250,.5)}
+.notif-dot{position:absolute;top:2px;right:2px;width:10px;height:10px;border-radius:50%;background:var(--danger);border:2px solid var(--bg);display:none}
+.notif-dot.show{display:block}
+.ai-panel{position:fixed;bottom:92px;right:28px;width:340px;max-height:500px;background:var(--bg1);border:0.5px solid var(--border2);border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;z-index:300}
+.ai-panel.open{display:flex;animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ai-hdr{padding:16px 18px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ai-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ai-name{font-size:13px;font-weight:500;color:var(--text1)}
+.ai-status{font-size:11px;color:var(--accent2)}
+.ai-close{margin-left:auto;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:2px;transition:color .15s}
+.ai-close:hover{color:var(--text1)}
+.ai-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none}
+.ai-messages::-webkit-scrollbar{display:none}
+.ai-msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:12px;line-height:1.65;white-space:pre-wrap}
+.ai-msg.bot{background:var(--bg2);color:var(--text1);border-radius:4px 14px 14px 14px;align-self:flex-start}
+.ai-msg.user{background:var(--accent);color:#fff;border-radius:14px 4px 14px 14px;align-self:flex-end}
+.ai-msg.typing{color:var(--text3);font-style:italic}
+.ai-input-row{display:flex;gap:8px;padding:12px 14px;border-top:0.5px solid var(--border);flex-shrink:0}
+.ai-input{flex:1;background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text1);font-size:12px;outline:none;font-family:'DM Sans',sans-serif;transition:border-color .2s;resize:none;line-height:1.5}
+.ai-input:focus{border-color:var(--accent)}
+.ai-send{background:var(--accent);border:none;color:#fff;width:34px;height:34px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .2s;flex-shrink:0;align-self:flex-end}
+.ai-send:hover{background:var(--accent-dim)}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(8,7,14,.75);display:flex;align-items:center;justify-content:center;z-index:400;backdrop-filter:blur(4px)}
+.modal{background:var(--bg1);border:0.5px solid var(--border2);border-radius:20px;padding:26px;width:360px;max-width:94vw;box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.modal h3{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text1);margin-bottom:20px;letter-spacing:-.3px}
+.m-group{margin-bottom:14px}
+.m-label{font-size:11px;color:var(--text3);margin-bottom:5px;display:block;letter-spacing:.6px;text-transform:uppercase}
+.m-input,.m-select,.m-textarea{width:100%;background:var(--bg);border:0.5px solid var(--border2);border-radius:10px;padding:11px 13px;color:var(--text1);font-size:13px;outline:none;font-family:'DM Sans',sans-serif;transition:border-color .2s,box-shadow .2s}
+.m-input:focus,.m-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(167,139,250,.1)}
+.m-textarea{resize:vertical;min-height:80px;line-height:1.6}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.btn-cancel{background:transparent;border:0.5px solid var(--border);color:var(--text2);padding:10px 18px;border-radius:10px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-cancel:hover{background:var(--bg2)}
+.btn-save{background:var(--accent);border:none;color:#fff;padding:10px 20px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-save:hover{background:var(--accent-dim);transform:translateY(-1px)}
+.form-err{font-size:12px;color:var(--danger);min-height:18px;margin-bottom:12px}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:600;cursor:pointer}
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:12px;object-fit:contain}
+
+@media(max-width:640px){
+  .side-panel{display:none}
+  .topbar{padding:0 14px}
+  .cal-grid{padding:6px;gap:3px}
+  .cal-day{padding:5px;border-radius:8px}
+  .day-num{font-size:10px}
+  .ev-pip{font-size:9px}
+  .add-btn span{display:none}
+  .date-nav-part{padding:7px 11px;font-size:13px}
+  .ai-panel{width:calc(100vw - 32px);right:16px;bottom:84px}
+  .ai-trigger{bottom:20px;right:20px}
+}
+</style>
+</head>
+<body>
+
+<div class="screen" id="screen-setup">
+  <div class="auth-bg">
+    <div class="auth-card">
+      <span class="auth-glyph">🗓</span>
+      <div class="auth-title">Takvimine hoş geldin</div>
+      <div class="auth-sub">Kişisel alanın. Sadece senin.<br>Başlamak için bir şifre belirle.</div>
+      <div class="auth-err" id="setup-err"></div>
+      <div class="f-group"><label class="f-label">Şifre</label><input class="f-input" type="password" id="setup-pw" placeholder="En az 4 karakter" autocomplete="new-password"></div>
+      <div class="f-group"><label class="f-label">Tekrar</label><input class="f-input" type="password" id="setup-pw2" placeholder="Şifreni tekrarla" autocomplete="new-password"></div>
+      <button class="auth-btn" onclick="doSetup()">Başla</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-lock">
+  <div class="auth-bg">
+    <div class="auth-card">
+      <span class="auth-glyph">🔒</span>
+      <div class="auth-title">Takvimine hoş geldin</div>
+      <div class="auth-sub">Devam etmek için<br>şifreni gir.</div>
+      <div class="auth-err" id="lock-err"></div>
+      <input class="f-input pw" type="password" id="lock-pw" placeholder="••••••••" autocomplete="current-password" style="margin-bottom:16px">
+      <button class="auth-btn" onclick="doUnlock()">Giriş</button>
+      <button class="text-link" onclick="resetAll()">Şifremi sıfırla (tüm veriler silinir)</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-app">
+  <div class="app">
+    <div class="topbar">
+      <div class="nav-cluster">
+        <button class="icon-btn" onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+        <button class="icon-btn" onclick="goToday()" title="Bugün"><i class="ti ti-calendar"></i></button>
+        <button class="icon-btn" onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div class="date-nav" id="date-nav" onclick="toggleDatePicker()">
+        <div class="date-nav-part" id="nav-month"></div>
+        <div class="date-nav-sep">·</div>
+        <div class="date-nav-part" id="nav-year"></div>
+      </div>
+      <div class="date-picker-popup" id="date-picker">
+        <div class="dp-section">
+          <div class="dp-label">Ay seç</div>
+          <div class="dp-months" id="dp-months"></div>
+        </div>
+        <div class="dp-section" style="margin-bottom:0">
+          <div class="dp-label">Yıl</div>
+          <div class="dp-year-row">
+            <button class="dp-year-btn" onclick="changePickerYear(-1);event.stopPropagation()"><i class="ti ti-minus" style="font-size:11px"></i></button>
+            <div class="dp-year-val" id="dp-year-val"></div>
+            <button class="dp-year-btn" onclick="changePickerYear(1);event.stopPropagation()"><i class="ti ti-plus" style="font-size:11px"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="add-btn" onclick="openModal()"><i class="ti ti-plus"></i><span>Yeni Plan</span></button>
+        <button class="icon-btn danger" title="Kilitle" onclick="lockApp()"><i class="ti ti-lock"></i></button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="cal-col">
+        <div class="days-header">
+          <div class="day-hdr">Pzt</div><div class="day-hdr">Sal</div><div class="day-hdr">Çar</div>
+          <div class="day-hdr">Per</div><div class="day-hdr">Cum</div>
+          <div class="day-hdr" style="color:var(--accent)">Cmt</div>
+          <div class="day-hdr" style="color:var(--accent)">Paz</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="side-panel">
+        <div class="panel-hdr">
+          <div class="panel-date" id="panel-date">Bir gün seç</div>
+          <div class="panel-sub" id="panel-sub">Planlarını görüntüle</div>
+        </div>
+        <div class="photo-area" id="photo-area" style="display:none">
+          <div class="photo-gallery" id="photo-gallery"></div>
+        </div>
+        <div class="events-list" id="events-list">
+          <div class="empty-state"><span class="empty-icon"><i class="ti ti-calendar-event"></i></span>Bir güne tıklayarak<br>planlarını görüntüle</div>
+        </div>
+        <div class="panel-bottom">
+          <button class="panel-add-btn" onclick="openModalForSelected()">+ Bu güne plan ekle</button>
+          <button class="text-link" onclick="openChangePw()">Şifremi değiştir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="ai-trigger" onclick="toggleAI()" style="position:fixed">
+    <i class="ti ti-sparkles"></i>
+    <div class="notif-dot" id="ai-notif"></div>
+  </button>
+
+  <div class="ai-panel" id="ai-panel">
+    <div class="ai-hdr">
+      <div class="ai-avatar"><i class="ti ti-sparkles" style="font-size:14px"></i></div>
+      <div><div class="ai-name">Takvim Asistanı</div><div class="ai-status">Çevrimiçi</div></div>
+      <button class="ai-close" onclick="toggleAI()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="ai-messages" id="ai-messages"></div>
+    <div class="ai-input-row">
+      <textarea class="ai-input" id="ai-input" placeholder="Bir şey sor veya planını anlat..." rows="1"></textarea>
+      <button class="ai-send" onclick="sendAI()"><i class="ti ti-send"></i></button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal" style="display:none">
+    <div class="modal">
+      <h3>Yeni Plan</h3>
+      <div class="m-group"><label class="m-label">Başlık *</label><input class="m-input" id="f-title" placeholder="Ne planladın?"></div>
+      <div class="two-col">
+        <div class="m-group"><label class="m-label">Tarih *</label><input class="m-input" id="f-date" type="date"></div>
+        <div class="m-group"><label class="m-label">Saat</label><input class="m-input" id="f-time" type="time"></div>
+      </div>
+      <div class="m-group"><label class="m-label">Tür</label>
+        <select class="m-select" id="f-type">
+          <option value="plan">📌 Plan</option>
+          <option value="todo">✅ Yapılacak</option>
+          <option value="urgent">🔴 Acil</option>
+        </select>
+      </div>
+      <div class="m-group"><label class="m-label">Açıklama / Not</label><textarea class="m-textarea" id="f-desc" placeholder="Detaylar, hatırlatmalar..."></textarea></div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">İptal</button>
+        <button class="btn-save" onclick="saveEvent()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="chg-modal" style="display:none">
+    <div class="modal">
+      <h3>Şifremi Değiştir</h3>
+      <div class="form-err" id="chg-err"></div>
+      <div class="m-group"><label class="m-label">Mevcut şifre</label><input class="m-input" type="password" id="chg-old"></div>
+      <div class="m-group"><label class="m-label">Yeni şifre</label><input class="m-input" type="password" id="chg-new"></div>
+      <div class="m-group"><label class="m-label">Tekrar</label><input class="m-input" type="password" id="chg-new2"></div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeChangePw()">İptal</button>
+        <button class="btn-save" onclick="doChangePw()">Değiştir</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" style="display:none" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="">
+  </div>
+  <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+</div>
+
+<script>
+const MONTHS=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const now=new Date();
+let viewYear=now.getFullYear(),viewMonth=now.getMonth(),selectedDate=null,pickerYear=now.getFullYear();
+const todayStr=isoDate(now);
+let aiInited=false;
+
+function isoDate(d){return d.toISOString().split('T')[0]}
+function getEvents(){return JSON.parse(localStorage.getItem('tkv_ev')||'[]')}
+function saveEvents(e){localStorage.setItem('tkv_ev',JSON.stringify(e))}
+function getPhotos(){return JSON.parse(localStorage.getItem('tkv_photos')||'{}')}
+function savePhotos(p){localStorage.setItem('tkv_photos',JSON.stringify(p))}
+function getHash(){return localStorage.getItem('tkv_pw')||''}
+function hash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0}return h.toString(36)}
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>{s.style.display='none';s.classList.remove('active')});const t=document.getElementById(id);t.style.display='flex';t.classList.add('active')}
+function init(){!getHash()?show('screen-setup'):(show('screen-lock'),setTimeout(()=>document.getElementById('lock-pw').focus(),100))}
+
+function doSetup(){
+  const p1=document.getElementById('setup-pw').value,p2=document.getElementById('setup-pw2').value,err=document.getElementById('setup-err');
+  if(p1.length<4){err.textContent='En az 4 karakter olmalı';return}
+  if(p1!==p2){err.textContent='Şifreler eşleşmiyor';return}
+  localStorage.setItem('tkv_pw',hash(p1));err.textContent='';show('screen-app');render();initAI();
+}
+function doUnlock(){
+  const pw=document.getElementById('lock-pw').value,err=document.getElementById('lock-err');
+  if(hash(pw)===getHash()){err.textContent='';document.getElementById('lock-pw').value='';show('screen-app');render();initAI();}
+  else{err.textContent='Hatalı şifre, tekrar dene.';document.getElementById('lock-pw').select();}
+}
+function lockApp(){document.getElementById('ai-panel').classList.remove('open');show('screen-lock');setTimeout(()=>document.getElementById('lock-pw').focus(),100)}
+function resetAll(){if(confirm('Tüm planların ve fotoğrafların silinecek. Emin misin?')){localStorage.clear();location.reload()}}
+
+function openChangePw(){document.getElementById('chg-modal').style.display='flex';document.getElementById('chg-err').textContent=''}
+function closeChangePw(){document.getElementById('chg-modal').style.display='none';['chg-old','chg-new','chg-new2'].forEach(id=>document.getElementById(id).value='')}
+function doChangePw(){
+  const old=document.getElementById('chg-old').value,n1=document.getElementById('chg-new').value,n2=document.getElementById('chg-new2').value,err=document.getElementById('chg-err');
+  if(hash(old)!==getHash()){err.textContent='Mevcut şifre yanlış';return}
+  if(n1.length<4){err.textContent='En az 4 karakter';return}
+  if(n1!==n2){err.textContent='Şifreler eşleşmiyor';return}
+  localStorage.setItem('tkv_pw',hash(n1));closeChangePw();alert('Şifren değiştirildi!');
+}
+
+/* DATE PICKER */
+function toggleDatePicker(e){const p=document.getElementById('date-picker');const open=p.classList.toggle('open');if(open){pickerYear=viewYear;renderPicker();}}
+function renderPicker(){
+  document.getElementById('dp-year-val').textContent=pickerYear;
+  const c=document.getElementById('dp-months');c.innerHTML='';
+  MONTHS.forEach((m,i)=>{
+    const d=document.createElement('div');d.className='dp-month'+(i===viewMonth&&pickerYear===viewYear?' active':'');
+    d.textContent=m.slice(0,3);
+    d.onclick=(e)=>{e.stopPropagation();viewMonth=i;viewYear=pickerYear;document.getElementById('date-picker').classList.remove('open');render();};
+    c.appendChild(d);
+  });
+}
+function changePickerYear(d){pickerYear+=d;renderPicker();}
+document.addEventListener('click',e=>{
+  const nav=document.getElementById('date-nav'),pk=document.getElementById('date-picker');
+  if(pk&&!nav.contains(e.target)&&!pk.contains(e.target))pk.classList.remove('open');
+});
+
+/* CALENDAR */
+function changeMonth(d){viewMonth+=d;if(viewMonth>11){viewMonth=0;viewYear++}if(viewMonth<0){viewMonth=11;viewYear--}render()}
+function goToday(){viewYear=now.getFullYear();viewMonth=now.getMonth();render();selectDay(todayStr)}
+
+function render(){
+  document.getElementById('nav-month').textContent=MONTHS[viewMonth];
+  document.getElementById('nav-year').textContent=viewYear;
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  const events=getEvents(),photos=getPhotos();
+  const first=new Date(viewYear,viewMonth,1);
+  let sd=first.getDay();sd=sd===0?6:sd-1;
+  const dim=new Date(viewYear,viewMonth+1,0).getDate(),pd=new Date(viewYear,viewMonth,0).getDate();
+  let cells=[];
+  for(let i=sd-1;i>=0;i--)cells.push({date:new Date(viewYear,viewMonth-1,pd-i),cur:false});
+  for(let i=1;i<=dim;i++)cells.push({date:new Date(viewYear,viewMonth,i),cur:true});
+  while(cells.length<42){const l=cells[cells.length-1].date;cells.push({date:new Date(l.getFullYear(),l.getMonth(),l.getDate()+1),cur:false})}
+  cells.forEach(({date,cur})=>{
+    const ds=isoDate(date),dayEvs=events.filter(e=>e.date===ds),dayPhotos=photos[ds]||[];
+    const div=document.createElement('div');
+    div.className='cal-day'+(cur?'':' other-month')+(ds===todayStr?' today':'')+(selectedDate===ds?' selected':'')+(dayPhotos.length?' has-photo':'');
+    if(ds===todayStr){const r=document.createElement('div');r.className='today-ring';div.appendChild(r);}
+    const n=document.createElement('div');n.className='day-num';n.textContent=date.getDate();div.appendChild(n);
+    if(dayPhotos.length){const img=document.createElement('img');img.className='day-thumb';img.src=dayPhotos[0];img.onerror=()=>img.style.display='none';div.appendChild(img);}
+    dayEvs.slice(0,2).forEach(ev=>{
+      const p=document.createElement('div');
+      p.className='ev-pip'+(ev.type==='urgent'?' urgent':ev.type==='todo'?' todo':'')+(ev.done?' done':'');
+      p.textContent=ev.title;div.appendChild(p);
+    });
+    if(dayEvs.length>2){const m=document.createElement('div');m.style.cssText='font-size:9px;color:var(--text3);padding-left:5px;margin-top:1px';m.textContent='+'+(dayEvs.length-2)+' daha';div.appendChild(m);}
+    div.onclick=()=>selectDay(ds);
+    grid.appendChild(div);
+  });
+  if(selectedDate)renderPanel(selectedDate);
+}
+
+function selectDay(ds){
+  selectedDate=ds;render();
+  const d=new Date(ds+'T12:00:00');
+  document.getElementById('panel-date').textContent=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  const n=getEvents().filter(e=>e.date===ds).length;
+  document.getElementById('panel-sub').textContent=n?n+' plan var':'Plan yok';
+  renderPanel(ds);renderPhotoArea(ds);
+}
+
+function renderPhotoArea(ds){
+  const photos=getPhotos(),dayPhotos=photos[ds]||[];
+  const area=document.getElementById('photo-area'),gallery=document.getElementById('photo-gallery');
+  area.style.display='block';gallery.innerHTML='';
+  dayPhotos.forEach(src=>{
+    const img=document.createElement('img');img.className='photo-thumb';img.src=src;
+    img.onclick=()=>openLightbox(src);gallery.appendChild(img);
+  });
+  const addBtn=document.createElement('button');addBtn.className='photo-add-btn';
+  addBtn.innerHTML='<i class="ti ti-camera"></i><span>Ekle</span>';
+  addBtn.onclick=()=>{document.getElementById('photo-input').dataset.date=ds;document.getElementById('photo-input').click();};
+  gallery.appendChild(addBtn);
+}
+
+function handlePhotoUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const ds=e.target.dataset.date;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const photos=getPhotos();if(!photos[ds])photos[ds]=[];
+    photos[ds].push(ev.target.result);savePhotos(photos);renderPhotoArea(ds);render();
+  };
+  reader.readAsDataURL(file);e.target.value='';
+}
+function openLightbox(src){document.getElementById('lightbox-img').src=src;document.getElementById('lightbox').style.display='flex'}
+function closeLightbox(){document.getElementById('lightbox').style.display='none'}
+
+function renderPanel(ds){
+  const list=document.getElementById('events-list'),dayEvs=getEvents().filter(e=>e.date===ds);
+  if(!dayEvs.length){list.innerHTML='<div class="empty-state"><span class="empty-icon"><i class="ti ti-calendar-plus"></i></span>Bu gün için plan yok</div>';return}
+  list.innerHTML='';
+  dayEvs.forEach(ev=>{
+    const idx=getEvents().findIndex(e=>e.id===ev.id),card=document.createElement('div');
+    card.className='ev-card'+(ev.done?' done-card':'');
+    const bc=ev.type==='urgent'?'badge-urgent':ev.type==='todo'?'badge-todo':'badge-plan';
+    const bt=ev.type==='urgent'?'Acil':ev.type==='todo'?'Yapılacak':'Plan';
+    card.innerHTML=`<div class="ec-top"><div class="ec-title${ev.done?' done-txt':''}">${ev.title}</div><span class="ec-badge ${bc}">${bt}</span></div>${ev.time?`<div class="ec-time"><i class="ti ti-clock" style="font-size:11px"></i> ${ev.time}</div>`:''}${ev.desc?`<div class="ec-desc">${ev.desc}</div>`:''}<div class="ec-actions"><button class="ec-btn ok-btn" onclick="toggleDone(${idx})">${ev.done?'↩ Geri al':'✓ Tamam'}</button><button class="ec-btn del-btn" onclick="deleteEv(${idx})"><i class="ti ti-trash" style="font-size:11px"></i> Sil</button></div>`;
+    list.appendChild(card);
+  });
+}
+function toggleDone(i){const e=getEvents();e[i].done=!e[i].done;saveEvents(e);if(selectedDate)selectDay(selectedDate)}
+function deleteEv(i){if(confirm('Bu planı silmek istediğine emin misin?')){const e=getEvents();e.splice(i,1);saveEvents(e);if(selectedDate)selectDay(selectedDate)}}
+
+function openModal(ds){
+  ['f-title','f-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-time').value='';document.getElementById('f-type').value='plan';
+  document.getElementById('f-date').value=ds||(selectedDate||todayStr);
+  document.getElementById('modal').style.display='flex';setTimeout(()=>document.getElementById('f-title').focus(),50);
+}
+function openModalForSelected(){openModal(selectedDate||todayStr)}
+function closeModal(){document.getElementById('modal').style.display='none'}
+function saveEvent(){
+  const title=document.getElementById('f-title').value.trim(),date=document.getElementById('f-date').value;
+  if(!title||!date){alert('Başlık ve tarih zorunlu!');return}
+  const events=getEvents();
+  events.push({title,date,time:document.getElementById('f-time').value,type:document.getElementById('f-type').value,desc:document.getElementById('f-desc').value.trim(),done:false,id:Date.now()});
+  saveEvents(events);closeModal();
+  viewYear=parseInt(date.split('-')[0]);viewMonth=parseInt(date.split('-')[1])-1;
+  selectDay(date);render();
+}
+
+/* AI */
+function toggleAI(){
+  const panel=document.getElementById('ai-panel');
+  const open=panel.classList.toggle('open');
+  if(open){document.getElementById('ai-notif').classList.remove('show');document.getElementById('ai-input').focus();}
+}
+function getUpcomingPlans(){
+  const events=getEvents(),today=new Date();today.setHours(0,0,0,0);
+  return events.filter(ev=>{const d=new Date(ev.date+'T12:00:00');const diff=Math.round((d-today)/(864e5));return diff>=0&&diff<=7&&!ev.done;}).sort((a,b)=>a.date.localeCompare(b.date));
+}
+function initAI(){
+  if(aiInited)return;aiInited=true;
+  const upcoming=getUpcomingPlans();
+  let msg='Merhaba! Ben senin takvim asistanınım ✨\n\n';
+  if(upcoming.length){
+    msg+='Önümüzdeki 7 günde şu planların var:\n';
+    upcoming.slice(0,3).forEach(ev=>{const d=new Date(ev.date+'T12:00:00');msg+=`• ${d.getDate()} ${MONTHS[d.getMonth()]} — ${ev.title}\n`;});
+    msg+='\nPlanların hakkında konuşmak veya öneri almak ister misin?';
+    document.getElementById('ai-notif').classList.add('show');
+  }else{msg+='Henüz yaklaşan planın yok. Planların veya günlük düzenin hakkında sormak istediğin bir şey var mı?'}
+  addAIMsg('bot',msg);
+}
+function addAIMsg(role,text){
+  const msgs=document.getElementById('ai-messages');
+  const d=document.createElement('div');d.className='ai-msg '+role;d.textContent=text;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+}
+async function sendAI(){
+  const input=document.getElementById('ai-input'),text=input.value.trim();
+  if(!text)return;input.value='';addAIMsg('user',text);
+  const typing=document.createElement('div');typing.className='ai-msg bot typing';typing.textContent='Yazıyor...';
+  document.getElementById('ai-messages').appendChild(typing);
+  document.getElementById('ai-messages').scrollTop=document.getElementById('ai-messages').scrollHeight;
+  const events=getEvents(),upcoming=getUpcomingPlans(),today=new Date();
+  const ctx=`Bugün: ${today.getDate()} ${MONTHS[today.getMonth()]} ${today.getFullYear()}.\nKullanıcının planları: ${JSON.stringify(events.map(e=>({başlık:e.title,tarih:e.date,saat:e.time||'belirtilmemiş',tür:e.type,tamamlandı:e.done,not:e.desc||''})))}\nYaklaşan (7 gün): ${JSON.stringify(upcoming.map(e=>({başlık:e.title,tarih:e.date,saat:e.time||''})))}\nSen samimi, kısa ve yardımsever bir Türkçe takvim asistanısın. Planlar hakkında hatırlatma yap, öneri ver.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system:ctx,messages:[{role:'user',content:text}]})});
+    const data=await res.json();typing.remove();
+    addAIMsg('bot',data.content?.[0]?.text||'Bir sorun oluştu.');
+  }catch(e){typing.remove();addAIMsg('bot','Bağlantı hatası. Tekrar dene.');}
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('lock-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doUnlock()});
+  document.getElementById('setup-pw2').addEventListener('keydown',e=>{if(e.key==='Enter')doSetup()});
+  document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+  document.getElementById('chg-modal').addEventListener('click',function(e){if(e.target===this)closeChangePw()});
+  document.getElementById('ai-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI();}});
+});
+init();
+</script>
+</body>
+</html>
