@@ -544,9 +544,11 @@ async function sendAI(){
   const events=getEvents(),upcoming=getUpcomingPlans(),today=new Date();
   const ctx=`Bugün: ${today.getDate()} ${MONTHS[today.getMonth()]} ${today.getFullYear()}.\nKullanıcının planları: ${JSON.stringify(events.map(e=>({başlık:e.title,tarih:e.date,saat:e.time||'belirtilmemiş',tür:e.type,tamamlandı:e.done,not:e.desc||''})))}\nYaklaşan (7 gün): ${JSON.stringify(upcoming.map(e=>({başlık:e.title,tarih:e.date,saat:e.time||''})))}\nSen samimi, kısa ve yardımsever bir Türkçe takvim asistanısın. Planlar hakkında hatırlatma yap, öneri ver.`;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system:ctx,messages:[{role:'user',content:text}]})});
+    const GEMINI_KEY='GEMINI_API_ANAHTARINI_BURAYA_YAZ';
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:ctx+'\n\nKullanıcı: '+text}]}],generationConfig:{maxOutputTokens:400}})});
     const data=await res.json();typing.remove();
-    addAIMsg('bot',data.content?.[0]?.text||'Bir sorun oluştu.');
+    const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||'Bir sorun oluştu.';
+    addAIMsg('bot',reply);
   }catch(e){typing.remove();addAIMsg('bot','Bağlantı hatası. Tekrar dene.');}
 }
 
